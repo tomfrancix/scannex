@@ -5,31 +5,27 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Scannect.Models;
-using Scannect.Repository;
 
 namespace Scannect.Controllers
 {
-    public class ItemController : Controller
+    public class ItemImagesController : Controller
     {
         private readonly ScannectContext _context;
 
-        public ItemController(ScannectContext context)
+        public ItemImagesController(ScannectContext context)
         {
             _context = context;
         }
 
-        // GET: Item
-        [HttpPost]
-        public async Task<IActionResult> Index(string input)
+        // GET: ItemImages
+        public async Task<IActionResult> Index()
         {
-            var results = ItemRepository.GetSearchResults(input, _context);
-            ViewBag.Count = results.Count;
-            return View(results);
+            var scannectContext = _context.ItemImages.Include(i => i.Item);
+            return View(await scannectContext.ToListAsync());
         }
 
-        // GET: Item/Details/5
+        // GET: ItemImages/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -37,39 +33,42 @@ namespace Scannect.Controllers
                 return NotFound();
             }
 
-            var item = await _context.Items
+            var itemImage = await _context.ItemImages
+                .Include(i => i.Item)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (item == null)
+            if (itemImage == null)
             {
                 return NotFound();
             }
 
-            return View(item);
+            return View(itemImage);
         }
 
-        // GET: Item/Create
+        // GET: ItemImages/Create
         public IActionResult Create()
         {
+            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id");
             return View();
         }
 
-        // POST: Item/Create
+        // POST: ItemImages/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Url,WebsiteUrl,Title,Snippet,DateCreated,Hits,Ranking,Category,Author")] Item item)
+        public async Task<IActionResult> Create([Bind("Id,Url,Alt,Title,Annotation,Placeholder,Width,Height,ItemId")] ItemImage itemImage)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(item);
+                _context.Add(itemImage);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(item);
+            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id", itemImage.ItemId);
+            return View(itemImage);
         }
 
-        // GET: Item/Edit/5
+        // GET: ItemImages/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -77,22 +76,23 @@ namespace Scannect.Controllers
                 return NotFound();
             }
 
-            var item = await _context.Items.FindAsync(id);
-            if (item == null)
+            var itemImage = await _context.ItemImages.FindAsync(id);
+            if (itemImage == null)
             {
                 return NotFound();
             }
-            return View(item);
+            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id", itemImage.ItemId);
+            return View(itemImage);
         }
 
-        // POST: Item/Edit/5
+        // POST: ItemImages/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Url,WebsiteUrl,Title,Snippet,DateCreated,Hits,Ranking,Category,Author")] Item item)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Url,Alt,Title,Annotation,Placeholder,Width,Height,ItemId")] ItemImage itemImage)
         {
-            if (id != item.Id)
+            if (id != itemImage.Id)
             {
                 return NotFound();
             }
@@ -101,12 +101,12 @@ namespace Scannect.Controllers
             {
                 try
                 {
-                    _context.Update(item);
+                    _context.Update(itemImage);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ItemExists(item.Id))
+                    if (!ItemImageExists(itemImage.Id))
                     {
                         return NotFound();
                     }
@@ -117,10 +117,11 @@ namespace Scannect.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(item);
+            ViewData["ItemId"] = new SelectList(_context.Items, "Id", "Id", itemImage.ItemId);
+            return View(itemImage);
         }
 
-        // GET: Item/Delete/5
+        // GET: ItemImages/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -128,30 +129,31 @@ namespace Scannect.Controllers
                 return NotFound();
             }
 
-            var item = await _context.Items
+            var itemImage = await _context.ItemImages
+                .Include(i => i.Item)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (item == null)
+            if (itemImage == null)
             {
                 return NotFound();
             }
 
-            return View(item);
+            return View(itemImage);
         }
 
-        // POST: Item/Delete/5
+        // POST: ItemImages/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var item = await _context.Items.FindAsync(id);
-            _context.Items.Remove(item);
+            var itemImage = await _context.ItemImages.FindAsync(id);
+            _context.ItemImages.Remove(itemImage);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        public bool ItemExists(int id)
+        private bool ItemImageExists(int id)
         {
-            return _context.Items.Any(e => e.Id == id);
+            return _context.ItemImages.Any(e => e.Id == id);
         }
     }
 }
