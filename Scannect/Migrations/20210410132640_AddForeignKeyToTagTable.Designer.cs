@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Scannect.Models;
 
 namespace Scannect.Migrations
 {
     [DbContext(typeof(ScannectContext))]
-    partial class ScannectContextModelSnapshot : ModelSnapshot
+    [Migration("20210410132640_AddForeignKeyToTagTable")]
+    partial class AddForeignKeyToTagTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
